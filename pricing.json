@@ -1,0 +1,12 @@
+{
+  "verifiedOn": "2026-10-21",
+  "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing/",
+  "effectiveFrom": "2026-10-21",
+  "providers": ["deepseek-official"],
+  "period": "auto",
+  "holidayDates": [],
+  "models": [
+    { "ids": ["deepseek-flash", "deepseek-v4-flash", "deepseek-v4-flash-vision-exp", "DeepSeek-V4.1-Flash-1017"], "peak": { "input": 2, "cacheRead": 0.04, "output": 8 }, "offpeak": { "input": 1, "cacheRead": 0.02, "output": 4 } },
+    { "ids": ["deepseek-v4-pro", "DeepSeek-V4-Pro-0813"], "peak": { "input": 9, "cacheRead": 0.3, "output": 27 }, "offpeak": { "input": 4.5, "cacheRead": 0.15, "output": 13.5 } }
+  ]
+}
