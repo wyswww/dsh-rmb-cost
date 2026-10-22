@@ -1,4 +1,9 @@
-/** Host plugin: the standard projection registry owns replay, caching, and delivery. */
+/**
+ * Host plugin: the standard projection registry owns replay, caching, and delivery.
+ * Pricing covers both built-in DeepSeek providers: an API-key provider and the
+ * account provider serve the same official model at the same list price, so a
+ * provider switch inside one session must not silently zero the estimate.
+ */
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { z } from 'zod'
@@ -17,7 +22,7 @@ const pricingSchema = z.object({
   holidayDates: z.array(date),
   models: z.array(z.object({ ids: z.array(z.string().min(1)).min(1), peak: rate, offpeak: rate }).strict()).min(1),
 }).strict().refine(value => {
-  const ids = value.models.flatMap(row => row.ids)
+  const ids = value.models.flatMap(row => row.ids).map(id => id.toLowerCase().replace(/\s+/g, ''))
   return new Set(ids).size === ids.length
 }, 'Model ids must be unique')
 const totalsSchema = z.object(Object.fromEntries(Object.keys(emptyTotals()).map(key => [key, z.number().nonnegative()])))

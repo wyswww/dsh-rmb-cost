@@ -1,33 +1,33 @@
 # dsh-rmb-cost
 
-DeepSeek Harness 人民币费用估算插件。在对话输入框下方显示当前会话的模型 Token 费用，例如 **估算 ¥0.0123**。
+DeepSeek Harness 人民币费用估算插件。在对话输入框下方显示当前会话的模型 Token 费用，例如 **估算 ¥0.0884**。
 
-界面仅显示金额，没有三角按钮或弹窗。每次模型请求结算后更新，刷新和历史翻页不会重置统计。支持中文和英文。
+界面只有这一行文字，没有三角按钮或弹窗；鼠标悬停可看到输入／缓存／输出 Token 与已结算请求次数。金额位数随大小自适应，小额不会被抹成 `0.0000`。每次模型请求结算后更新，刷新和历史翻页不会重置统计。支持中文和英文。
 
 > 社区插件，与 DeepSeek 官方无隶属关系。金额根据会话日志用量和配置单价估算，不是官方扣费记录，不能保证与账单完全一致。
 
 ## 兼容性
 
-当前版本为 `0.1.2`。基于 DeepSeek Harness `0.2.1-rc.2`、上游提交 `687f282e8625c6b8d11ff58211a90524be2e4317` 开发，声明范围为 `>=0.2.1-rc.2 <0.3.0`。Harness 接口仍在快速迭代，声明范围不代表所有版本都已验证。
+当前版本为 `0.1.3`。基于 DeepSeek Harness `0.2.1-rc.2`、上游提交 `687f282e8625c6b8d11ff58211a90524be2e4317` 开发，声明范围为 `>=0.2.1-rc.2 <0.3.0`。Harness 接口仍在快速迭代，声明范围不代表所有版本都已验证。
 
-用户已在桌面客户端安装并使用费用显示。自动测试覆盖计费及模块注册；尚未完成真实 API 账单对账和所有版本／平台验证。
+用户已在桌面客户端安装并使用费用显示。自动测试覆盖计费逻辑；尚未完成真实 API 账单对账和所有版本／平台验证。
 
 ## 安装：桌面客户端
 
-从本仓库 Releases 下载 `dsh-rmb-cost-0.1.2.tgz`，**无需解压**。如果没有可用 Release，可按下文从源码打包。
+从本仓库 Releases 下载 `dsh-rmb-cost-0.1.3.tgz`，**无需解压**。如果没有可用 Release，可按下文从源码打包。
 
 先启动桌面客户端一次以初始化配置，再完全退出，包括系统托盘中的程序。必须使用桌面版自带的 `dsh`；普通 npm 安装的 `dsh` 不能管理桌面版配置。
 
 如果已安装桌面版命令，在 PowerShell 执行：
 
 ```powershell
-dsh plugin --profile desktop add "C:\下载目录\dsh-rmb-cost-0.1.2.tgz"
+dsh plugin --profile desktop add "C:\下载目录\dsh-rmb-cost-0.1.3.tgz"
 ```
 
 如果没有 `dsh` 命令，可直接使用安装目录里的脚本，将下面的路径替换成实际路径：
 
 ```powershell
-& "C:\DeepSeek Harness安装目录\resources\runtime\cli\bin\dsh.cmd" plugin --profile desktop add "C:\下载目录\dsh-rmb-cost-0.1.2.tgz"
+& "C:\DeepSeek Harness安装目录\resources\runtime\cli\bin\dsh.cmd" plugin --profile desktop add "C:\下载目录\dsh-rmb-cost-0.1.3.tgz"
 ```
 
 安装完成后重新打开客户端，进入一个会话即可看到费用。
@@ -36,7 +36,7 @@ dsh plugin --profile desktop add "C:\下载目录\dsh-rmb-cost-0.1.2.tgz"
 
 ```powershell
 dsh plugin --profile desktop remove dsh-rmb-cost
-dsh plugin --profile desktop add "C:\下载目录\dsh-rmb-cost-0.1.2.tgz"
+dsh plugin --profile desktop add "C:\下载目录\dsh-rmb-cost-0.1.3.tgz"
 ```
 
 没有配置 `dsh` 命令时，两行命令均使用上述 `dsh.cmd` 完整路径。卸载只需执行 `remove` 命令，然后重启客户端。
@@ -46,7 +46,7 @@ dsh plugin --profile desktop add "C:\下载目录\dsh-rmb-cost-0.1.2.tgz"
 需要 Node.js 22.19+ 和 npm：
 
 ```powershell
-npx @deepseek-ai/dsh plugin --profile web add "C:\下载目录\dsh-rmb-cost-0.1.2.tgz"
+npx @deepseek-ai/dsh plugin --profile web add "C:\下载目录\dsh-rmb-cost-0.1.3.tgz"
 npx @deepseek-ai/dsh web
 ```
 
@@ -72,7 +72,7 @@ npm pack --ignore-scripts
            + 输出 Token × 输出单价）÷ 1,000,000
 ```
 
-Harness 的 `inputTokens` 已排除缓存命中；思考 Token 已包含在输出中，均不重复计算。金额显示四位小数，非零且小于 `0.0001` 元时显示 `<0.0001`。
+Harness 的 `inputTokens` 已排除缓存命中；思考 Token 已包含在输出中，均不重复计算。金额位数随大小自适应：≥¥1 两位小数、≥¥0.01 四位、≥¥0.0001 六位、更小八位。
 
 默认价格于 **2026-10-21** 核对，来源：[DeepSeek 官方人民币定价](https://api-docs.deepseek.com/zh-cn/quick_start/pricing/)。单位为元／百万 Token：
 
@@ -81,7 +81,7 @@ Harness 的 `inputTokens` 已排除缓存命中；思考 Token 已包含在输�
 | Flash | 2 | 0.04 | 8 | 1 | 0.02 | 4 |
 | V4 Pro | 9 | 0.30 | 27 | 4.5 | 0.15 | 13.5 |
 
-默认服务商为 `deepseek-official`，模型名和别名见 [pricing.json](./pricing.json)。价格可能变化，请核对官方页面并更新配置。
+默认覆盖两个内置服务商：`deepseek-official`（API Key）和 `deepseek-account`（账号登录），两者是同一套官方模型与官方牌价，同一会话中途切换也不会漏计。模型名和别名见 [pricing.json](./pricing.json)；匹配时忽略大小写、空格与 `-_.` 分隔符，并接受 `-1017`、`.v2` 这类数字构建后缀，`-lite` 等单词后缀仍视为未知模型。价格可能变化，请核对官方页面并更新配置。
 
 ### 高峰、空闲与节假日
 
@@ -95,7 +95,7 @@ Harness 的 `inputTokens` 已排除缓存命中；思考 Token 已包含在输�
 
 不包含独立子会话、未进入当前会话日志的标题生成等调用，以及 Search／Fetch 等按次费用。接口未报告的用量无法还原。未知模型、非配置服务商、无历史价格及单独缓存写入 Token 不会套用猜测的价格。
 
-只能计算部分费用时显示 **已计价 ¥…**，其余情况显示 **估算 ¥…**。界面不展示明细或“计价不完整”提示。跨时段请求、历史调价和官方结算规则均可能造成差异，以官方账单为准。
+只能计算部分费用时显示 **估算 ¥…（部分未计价）**，全部可计价时显示 **估算 ¥…**；悬停可查看 Token 明细与已结算请求次数。跨时段请求、历史调价和官方结算规则均可能造成差异，以官方账单为准。
 
 ## 配置
 
@@ -120,7 +120,7 @@ Harness 的 `inputTokens` 已排除缓存命中；思考 Token 已包含在输�
 - id: rmb-cost
   config:
     effectiveFrom: "2026-10-21"
-    providers: [deepseek-official]
+    providers: [deepseek-official, deepseek-account]
     period: auto
     holidayDates: []
     models:
@@ -135,7 +135,7 @@ Harness 的 `inputTokens` 已排除缓存命中；思考 Token 已包含在输�
 
 **没有费用显示？** 确认安装在实际使用的 profile，重启后进入已有会话；空白首页不会显示。等待一次请求结算后再检查。
 
-**显示“已计价”或金额偏低？** 检查模型名、服务商、请求日期和接口用量是否可用。该金额只包含能够确认用量与单价的部分。
+**显示“（部分未计价）”或金额偏低？** 检查模型名、服务商、请求日期和接口用量是否可用。该金额只包含能够确认用量与单价的部分，悬停可看到未计入的 Token。使用第三方转发时，需把该 provider 名称加入 `providers` 配置。
 
 **为什么不直接显示余额变化？** 插件读取会话用量，不读取余额。其他会话、充值和其他收费项目也会影响账户余额。
 
@@ -152,7 +152,7 @@ Harness 的 `inputTokens` 已排除缓存命中；思考 Token 已包含在输�
 | `cordis.patch.yml` | 插件挂载配置 |
 | `tests/accounting.test.js` | 计费与模块测试 |
 
-执行 `npm test`。现有 7 项测试覆盖缓存与思考 Token、时间边界、节假日、模型切换、重试、替代结算、未知与历史价格、配置校验、投影和浏览器模块注册。测试不消耗 API 额度，不代表已完成官方账单对账。
+执行 `npm test`。现有 9 项测试覆盖两个内置 provider、provider 中途切换、模型名后缀匹配与 `-lite` 拒绝、缓存与思考 Token、高峰边界与节假日、缺失用量、生效日期、重试替代结算。测试不消耗 API 额度，也不代表已完成官方账单对账。
 
 ## 许可证
 

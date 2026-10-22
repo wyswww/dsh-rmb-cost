@@ -2,7 +2,7 @@
   "verifiedOn": "2026-10-21",
   "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing/",
   "effectiveFrom": "2026-10-21",
-  "providers": ["deepseek-official"],
+  "providers": ["deepseek-official", "deepseek-account"],
   "period": "auto",
   "holidayDates": [],
   "models": [

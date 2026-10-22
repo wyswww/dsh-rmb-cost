@@ -15,6 +15,26 @@ export function billingPeriod(time, pricing) {
     && ((minute >= 540 && minute < 720) || (minute >= 840 && minute < 1080)) ? 'peak' : 'offpeak'
 }
 
+/** Compare provider ids and model aliases without case, spacing, or separator noise. */
+const normalize = value => String(value).toLowerCase().replace(/\s+/g, '')
+
+/**
+ * A model id matches an alias exactly, ignoring case, spacing and -_./ separators, or
+ * carries a numeric build suffix such as -1017, _2026-10-21 or .v2. Word suffixes
+ * like -lite never match, so an unpriced cheaper variant cannot inherit these rates.
+ */
+function matchesModel(model, alias) {
+  const key = normalize(model)
+  const id = normalize(alias)
+  if (key === id || key.replace(/[-_./]/g, '') === id.replace(/[-_./]/g, '')) return true
+  return key.startsWith(id) && /^[-_./]v?\d[\w.-]*$/.test(key.slice(id.length))
+}
+
+function matchesProvider(provider, pricing) {
+  const key = normalize(provider)
+  return pricing.providers.some(id => normalize(id) === key)
+}
+
 /** Match an explicitly configured provider/model; unknown prices never become zero-cost claims. */
 export function priceUsage(usage, provider, model, time, pricing) {
   const totals = emptyTotals()
@@ -24,8 +44,11 @@ export function priceUsage(usage, provider, model, time, pricing) {
   totals.cacheRead = usage.cacheReadTokens ?? 0
   totals.output = usage.outputTokens
   const writes = usage.cacheWriteTokens ?? 0
-  const rate = pricing.providers.includes(provider)
-    ? pricing.models.find(row => row.ids.includes(model))?.[billingPeriod(time, pricing)] : undefined
+  const period = billingPeriod(time, pricing)
+  const row = matchesProvider(provider, pricing)
+    ? pricing.models.find(entry => entry.ids.some(alias => matchesModel(model, alias)))
+    : undefined
+  const rate = row?.[period]
   const validDate = new Date(time + 8 * 3600_000).toISOString().slice(0, 10) >= pricing.effectiveFrom
   if (rate === undefined || !validDate) {
     totals.unpricedTokens = totals.input + totals.cacheRead + totals.output + writes
@@ -49,7 +72,10 @@ function usageOf(event) {
 
 /** Fold complete logs, including failed attempts and explicit retries, without double counting settlements. */
 export function fold(state, event, pricing) {
-  if (event.type === 'request/header') return { ...state, model: event.data.header.config.model, provider: event.data.header.config.provider }
+  if (event.type === 'request/header') {
+    const config = event.data.header.config
+    return { ...state, model: config.model, provider: config.provider }
+  }
   if (event.type === 'step/start') return { ...state, requestTime: event.time }
   if (event.type === 'llm/retry-started') return { ...state, last: null, requestTime: event.time }
   if (event.type !== 'assistant/message' && event.type !== 'assistant/attempt') return state
